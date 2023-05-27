@@ -248,6 +248,31 @@ namespace Xilinx_programer
             this.SetEnableForm(false);
             this.tb_prog.Foreground = Brushes.Black;
 
+            await this.Run_Cmd_Prog_flash(this.boot_info.offset, this.boot_info.hw, this.boot_bin_path);
+
+            this.SetEnableForm(true);
+        }
+
+        async private Task Run_Cmd_Prog_flash(string offset, string hw, string bin)
+        {
+            if (!System.IO.File.Exists("python-3.11/python.exe"))
+            {
+                this.tb_prog.Text = "Program Error: python.exe not found";
+                this.tb_prog.Foreground = Brushes.Red;
+                MessageBox.Show("python.exe not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                return;
+            }
+
+            if (!System.IO.File.Exists("scripts/program.py"))
+            {
+                this.tb_prog.Text = "Program Error: scripts/program.py not found";
+                this.tb_prog.Foreground = Brushes.Red;
+                MessageBox.Show("scripts/program.py not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                return;
+            }
+
             this.flash_process = new System.Diagnostics.Process();
 
             System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo()
@@ -259,28 +284,6 @@ namespace Xilinx_programer
                 Arguments = string.Format("scripts/program.py --offset {0} --hw {1} --bin {2}", offset, hw, bin),
             };
 
-            if (!System.IO.File.Exists("python-3.11/python.exe"))
-            {
-                this.tb_prog.Text = "Program Error: python.exe not found";
-                this.tb_prog.Foreground = Brushes.Red;
-                MessageBox.Show("python.exe not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                this.SetEnableForm(true);
-
-                return;
-            }
-
-            if (!System.IO.File.Exists("scripts/program.py"))
-            {
-                this.tb_prog.Text = "Program Error: scripts/program.py not found";
-                this.tb_prog.Foreground = Brushes.Red;
-                MessageBox.Show("scripts/program.py not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-
-                this.SetEnableForm(true);
-
-                return;
-            }
 
             this.flash_process.StartInfo = startInfo;
             this.flash_process.Start();
@@ -326,6 +329,7 @@ namespace Xilinx_programer
                 this.tb_prog.Text = "Program Error";
                 this.tb_prog.Foreground = Brushes.Red;
                 MessageBox.Show("Error program flash", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
             }
             else
             {
@@ -333,7 +337,6 @@ namespace Xilinx_programer
                 this.tb_prog.Foreground = Brushes.DarkGreen;
             }
 
-            this.SetEnableForm(true);
         }
 
 
