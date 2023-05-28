@@ -26,17 +26,25 @@
                                 <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#6ff6fc"/>
                                 <Setter Property="Background" TargetName="border" Value="#004f52"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="#004f52"/>
+                                <!--<Setter Property="Background" TargetName="border" Value="#FF006FC9"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF006FC9"/>-->
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
                                 <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#44474e"/>
                                 <Setter Property="Background" TargetName="border" Value="#e0e2ec"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="#e0e2ec"/>
+
+
                             </Trigger>
 
                             <Trigger Property="IsPressed" Value="true">
                                 <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#003739"/>
                                 <Setter Property="Background" TargetName="border" Value="#4cd9e0"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="#4cd9e0"/>
+
+                                <!--<Setter Property="Background" TargetName="border" Value="#FF006FC9"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF006FC9"/>-->
+
                             </Trigger>
                         </ControlTemplate.Triggers>
 

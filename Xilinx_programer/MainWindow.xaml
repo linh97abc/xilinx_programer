@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:Xilinx_programer"
         mc:Ignorable="d"
         Title="Xilinx Programer" Height="320" Width="720"
-        Background="#FFF3F3F3">
+        Background="#FFF2F2F2"
+        >
+        <!--Background="#FFF3F3F3"--> 
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>

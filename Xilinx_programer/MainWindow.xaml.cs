@@ -75,7 +75,7 @@ namespace Xilinx_programer
 
         private void Button_Open_Click(object sender, RoutedEventArgs e)
         {
-            this.btnProg.IsEnabled = true;
+            
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "FLASH File (*.flash)|*.flash";
 
@@ -201,6 +201,7 @@ namespace Xilinx_programer
                     }
                 }
 
+                this.btnProg.IsEnabled = true;
                 this.gridImgInfo.Visibility = Visibility.Visible;
             }
 
@@ -248,97 +249,54 @@ namespace Xilinx_programer
             this.SetEnableForm(false);
             this.tb_prog.Foreground = Brushes.Black;
 
-            await this.Run_Cmd_Prog_flash(this.boot_info.offset, this.boot_info.hw, this.boot_bin_path);
+            string tmp_path = this.GetTemporaryDirectory();
+            string vitis_path = System.IO.Path.GetFullPath(System.IO.Path.Combine("HWSRVR", "2022.2"));
+            string board_dir = System.IO.Path.GetFullPath(System.IO.Path.Combine("boards", hw));
+
+            ProgramFlash prog_flash = new ProgramFlash(tmp_path, vitis_path, board_dir, offset);
+
+            prog_flash.OnReportProgress += delegate (string prog_info, int prog_val)
+            {
+                this.tb_prog.Text = prog_info;
+                if (prog_val >= 0)
+                {
+                    this.prog_bar.Value = prog_val;
+                }
+            };
+
+            var ret = await prog_flash.Run(bin);
+
+
+            switch(ret)
+            {
+                case ProgramFlash.RunErrCode.XSDB_NOTFOUND:
+                    this.tb_prog.Text = "xsdb not found";
+                    this.tb_prog.Foreground = Brushes.Red;
+                    MessageBox.Show("xsdb not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                case ProgramFlash.RunErrCode.BIN_NOTFOUND:
+                    this.tb_prog.Text = "BOOT.bin not found";
+                    this.tb_prog.Foreground = Brushes.Red;
+                    MessageBox.Show("BOOT.bin not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                case ProgramFlash.RunErrCode.TCL_TMPL_NOTFOUND:
+                    this.tb_prog.Text = "Template TCL not found";
+                    this.tb_prog.Foreground = Brushes.Red;
+                    MessageBox.Show("Template TCL not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                case ProgramFlash.RunErrCode.RUN_TCL_ERR:
+                    this.tb_prog.Text = "Program Error";
+                    this.tb_prog.Foreground = Brushes.Red;
+                    MessageBox.Show("Error program flash", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break ;
+                default:
+                    this.tb_prog.Text = "Done";
+                    this.tb_prog.Foreground = Brushes.DarkGreen;
+                    break;
+            }
 
             this.SetEnableForm(true);
         }
-
-        async private Task Run_Cmd_Prog_flash(string offset, string hw, string bin)
-        {
-            if (!System.IO.File.Exists("python-3.11/python.exe"))
-            {
-                this.tb_prog.Text = "Program Error: python.exe not found";
-                this.tb_prog.Foreground = Brushes.Red;
-                MessageBox.Show("python.exe not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                return;
-            }
-
-            if (!System.IO.File.Exists("scripts/program.py"))
-            {
-                this.tb_prog.Text = "Program Error: scripts/program.py not found";
-                this.tb_prog.Foreground = Brushes.Red;
-                MessageBox.Show("scripts/program.py not found", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                return;
-            }
-
-            this.flash_process = new System.Diagnostics.Process();
-
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo()
-            {
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                FileName = "python-3.11/python.exe",
-                Arguments = string.Format("scripts/program.py --offset {0} --hw {1} --bin {2}", offset, hw, bin),
-            };
-
-
-            this.flash_process.StartInfo = startInfo;
-            this.flash_process.Start();
-
-
-            while (true)
-            {
-                var line = await this.flash_process.StandardOutput.ReadLineAsync();
-                if (line == null) break;
-                if (line == "") continue;
-
-                if (line.StartsWith(">>>"))
-                {
-                    if (line.Contains("<<<"))
-                    {
-                        var prog_info = line.Split("<<<");
-                        this.tb_prog.Text = prog_info[0].Substring(3);
-
-                        int prog_val = 0;
-                        bool is_prog_valid = int.TryParse(prog_info[1], out prog_val);
-
-                        if (is_prog_valid)
-                        {
-                            this.prog_bar.Value = prog_val;
-                        }
-                    }
-                    else
-                    {
-                        this.prog_bar.Value = 1;
-                        string prog = line.Substring(3);
-                        this.tb_prog.Text = prog;
-
-                    }
-
-                }
-            }
-
-            await this.flash_process.WaitForExitAsync();
-
-            if (this.flash_process.ExitCode != 0)
-            {
-                this.prog_bar.Value = 0;
-                this.tb_prog.Text = "Program Error";
-                this.tb_prog.Foreground = Brushes.Red;
-                MessageBox.Show("Error program flash", "Flash Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-            }
-            else
-            {
-                this.tb_prog.Text = "Done";
-                this.tb_prog.Foreground = Brushes.DarkGreen;
-            }
-
-        }
-
 
     }
 }
