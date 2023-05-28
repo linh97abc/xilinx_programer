@@ -248,6 +248,8 @@ namespace Xilinx_programer
         {
             this.SetEnableForm(false);
             this.tb_prog.Foreground = Brushes.Black;
+            this.tb_prog.Text = "Running...";
+            this.prog_bar.Value = 0;
 
             string tmp_path = this.GetTemporaryDirectory();
             string vitis_path = System.IO.Path.GetFullPath(System.IO.Path.Combine("HWSRVR", "2022.2"));
@@ -264,6 +266,7 @@ namespace Xilinx_programer
                 }
             };
 
+            
             var ret = await prog_flash.Run(bin);
 
 
